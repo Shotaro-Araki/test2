@@ -1,0 +1,28 @@
+name: Send DeploymentEvent to New Relic
+
+on:
+  push:
+    branches:
+      - main  # mainブランチにpushされたときに実行
+
+jobs:
+  send_event:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Send DeploymentEvent to New Relic
+        run: |
+          curl -X POST https://insights-collector.newrelic.com/v1/accounts/${{ secrets.NEW_RELIC_ACCOUNT_ID }}/events \
+            -H "Api-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "eventType": "DeploymentEvent",
+              "repository": "${{ github.repository }}",
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "status": "success",
+              "timestamp": "'$(date +%s)'"
+            }'
