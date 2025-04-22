@@ -1,0 +1,28 @@
+name: Notify New Relic of Deployment
+
+on:
+  push:
+    branches:
+      - main  # デプロイ対象のブランチ名
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send deployment info to New Relic
+        env:
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+        run: |
+          curl -X POST https://api.newrelic.com/v2/deployments.json \
+            -H "Api-Key: $NEW_RELIC_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "deployment": {
+                "revision": "'${{ github.sha }}'",
+                "changelog": "'${{ github.event.head_commit.message }}'",
+                "description": "Deployed via GitHub Actions",
+                "user": "${{ github.actor }}",
+                "application_name": "your-app-name"  # ※New Relic APM上のアプリ名
+              }
+            }'
