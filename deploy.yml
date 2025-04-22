@@ -1,0 +1,29 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 実際のデプロイ処理がここに入る
+
+      - name: Notify New Relic of deployment
+        run: |
+          curl -X POST https://api.newrelic.com/v2/applications/YOUR_APP_ID/deployments.json \
+          -H "Api-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+                "deployment": {
+                  "revision": "${{ github.sha }}",
+                  "description": "Deploy from GitHub Actions",
+                  "user": "${{ github.actor }}"
+                }
+              }'
